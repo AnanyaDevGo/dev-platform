@@ -1,0 +1,101 @@
+﻿ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev Portal — Build Better Applications</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="brand">Dev Portal</div>
+      <nav class="site-nav">
+        <a class="site-nav__link" href="#">Home</a>
+        <a class="site-nav__link" href="#">Features</a>
+        <a class="site-nav__link" href="#">Pricing</a>
+        <a class="site-nav__link" id="login-link" href="#">Login</a>
+      </nav>
+    </header>
+
+    <main class="hero" id="hero">
+      <div class="hero__content">
+        <h1 class="eyebrow">Welcome</h1>
+        <h2>Build Better Applications</h2>
+        <p class="hero__copy">Launch your next project faster with secure developer tools, beautiful UI, and a straightforward sign-in flow.</p>
+        <a class="btn btn--primary hero__cta" href="#">Get Started</a>
+      </div>
+    </main>
+
+    <section class="page login-section" id="login">
+      <div class="card">
+        <div class="card__header">
+          <h1 class="card__title">Dev Portal</h1>
+          <p class="card__subtitle">Sign in to your account</p>
+        </div>
+
+        <form class="form">
+          <div class="form__group">
+            <label class="form__label" for="email">Email</label>
+            <input class="form__input" type="email" id="email" placeholder="you@company.com" required>
+          </div>
+
+          <div class="form__group">
+            <label class="form__label" for="password">Password</label>
+            <input class="form__input" type="password" id="password" placeholder="••••••••" required>
+          </div>
+
+          <div class="form__footer">
+            <label class="checkbox">
+              <input type="checkbox"> Remember me
+            </label>
+            <a class="link" href="#">Forgot password?</a>
+          </div>
+
+          <button class="btn btn--primary" type="submit">Sign in</button>
+
+          <div class="divider">
+            <span>or continue with</span>
+          </div>
+
+          <button class="btn btn--oauth" type="button">
+            <img src="https://www.google.com/favicon.ico" width="16" height="16" alt="Google logo">
+            Sign in with Google
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <p>© 2026 Dev Portal. Built for modern teams.</p>
+    </footer>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var loginSection = document.querySelector('.login-section');
+        var loginLink = document.getElementById('login-link');
+        var hero = document.getElementById('hero');
+        var loginForm = document.querySelector('.login-section .form');
+
+        if (!loginSection || !loginLink || !hero) return;
+
+        loginLink.addEventListener('click', function (event) {
+          event.preventDefault();
+          hero.classList.add('hidden');
+          loginSection.classList.add('is-visible');
+          loginSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        if (loginForm) {
+          loginForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            loginSection.classList.remove('is-visible');
+            hero.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+        }
+      });
+    </script>
+  </div>
+</body>
+</html>
