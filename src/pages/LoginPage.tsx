@@ -1,70 +1,80 @@
 import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
+import { Link } from 'react-router-dom';
+import { useLogin } from '../hooks/useLogin';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { isValidEmail, isValidPassword } from '../utils/validation';
 
 export default function LoginPage() {
-  const navigate = useNavigate();
-  const { login, startOAuthLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isBusy, setIsBusy] = useState(false);
+  const [validationError, setValidationError] = useState('');
+  const { handleLogin, error, isBusy } = useLogin();
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
-    setIsBusy(true);
+    setValidationError('');
 
-    try {
-      await login(email, password);
-      navigate('/dashboard', { replace: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-    } finally {
-      setIsBusy(false);
+    if (!isValidEmail(email)) {
+      setValidationError('Enter a valid email address.');
+      return;
     }
+
+    if (!isValidPassword(password)) {
+      setValidationError('Password must be at least 8 characters and contain letters and numbers.');
+      return;
+    }
+
+    handleLogin({ email, password });
   }
 
   return (
     <section className="auth-page">
-      <div className="auth-card">
+      <div className="auth-card auth-card--wide">
         <div className="auth-header">
           <h1>Sign in</h1>
-          <p>Use a developer account or continue with OAuth.</p>
+          <p>Secure access to your dashboard and identity provider integrations.</p>
         </div>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <label>
-            <span>Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              required
-            />
-          </label>
+        <form className="auth-form" onSubmit={submit}>
+          <Input
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            required
+            error={validationError && !isValidEmail(email) ? validationError : undefined}
+          />
 
-          <label>
-            <span>Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="••••••••"
-              required
-            />
-          </label>
+          <Input
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="••••••••"
+            required
+            error={validationError && !isValidPassword(password) ? validationError : undefined}
+          />
 
+          {validationError ? <div className="form-error">{validationError}</div> : null}
           {error ? <div className="form-error">{error}</div> : null}
 
-          <button className="btn btn-primary" type="submit" disabled={isBusy}>
+          <Button type="submit" variant="primary" disabled={isBusy}>
             {isBusy ? 'Signing in…' : 'Sign in'}
-          </button>
+          </Button>
 
-          <button className="btn btn-secondary" type="button" onClick={startOAuthLogin}>
-            Continue with External IDP
-          </button>
+          <div className="oauth-actions">
+            <Button type="button" variant="secondary" onClick={() => (window.location.href = '/oauth')}>
+              Continue with Google
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => (window.location.href = '/oauth')}>
+              Continue with GitHub
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => (window.location.href = '/oauth')}>
+              Continue with Microsoft
+            </Button>
+          </div>
         </form>
 
         <div className="auth-footer">

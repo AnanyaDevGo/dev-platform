@@ -1,35 +1,26 @@
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../hooks/useAuth';
+import PageContainer from '../components/PageContainer';
+import { Card } from '../components/ui/Card';
+
+const quickStats = [
+  { label: 'Projects', value: '12' },
+  { label: 'Active users', value: '28' },
+  { label: 'Audit events', value: '124' },
+  { label: 'OAuth providers', value: '3' },
+];
 
 export default function DashboardPage() {
   const { user } = useAuth();
 
   return (
-    <section className="dashboard-page">
-      <div className="dashboard-card">
-        <div className="dashboard-header">
-          <h1>Dashboard</h1>
-          <p>Welcome back{user ? `, ${user.name}` : ''}! Your secure session is active.</p>
-        </div>
-
-        <div className="dashboard-summary">
-          <div className="stat-card">
-            <span className="stat-label">Account</span>
-            <strong>{user?.email}</strong>
-          </div>
-          <div className="stat-card">
-            <span className="stat-label">User ID</span>
-            <strong>{user?.id}</strong>
-          </div>
-        </div>
-
-        <div className="dashboard-explain">
-          <h2>What this app shows</h2>
-          <p>
-            This demo uses React router for protected routes, an auth provider for session state,
-            and a mocked OAuth/OIDC flow UI to represent what a real IDP login feels like.
-          </p>
-        </div>
+    <PageContainer title="Dashboard" description={`Welcome back${user ? `, ${user.name}` : ''}! Manage your workspace and identity providers from one place.`}>
+      <div className="dashboard-grid-cards">
+        {quickStats.map((stat) => (
+          <Card key={stat.label} title={stat.label} footer={<strong>{stat.value}</strong>}>
+            <p>Monitor usage, health, and user activity in real time.</p>
+          </Card>
+        ))}
       </div>
-    </section>
+    </PageContainer>
   );
 }

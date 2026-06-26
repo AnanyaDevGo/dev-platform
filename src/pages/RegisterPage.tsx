@@ -1,78 +1,98 @@
 import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
+import { Link } from 'react-router-dom';
+import { useRegister } from '../hooks/useRegister';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { isValidEmail, isValidPassword, doPasswordsMatch } from '../utils/validation';
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
-  const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isBusy, setIsBusy] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [validationError, setValidationError] = useState('');
+  const { handleRegister, error, isBusy } = useRegister();
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
-    setIsBusy(true);
+    setValidationError('');
 
-    try {
-      await register(name, email, password);
-      navigate('/dashboard', { replace: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
-    } finally {
-      setIsBusy(false);
+    if (!name.trim()) {
+      setValidationError('Please enter your full name.');
+      return;
     }
+
+    if (!isValidEmail(email)) {
+      setValidationError('Enter a valid email address.');
+      return;
+    }
+
+    if (!isValidPassword(password)) {
+      setValidationError('Password must be at least 8 characters and include letters and numbers.');
+      return;
+    }
+
+    if (!doPasswordsMatch(password, confirmPassword)) {
+      setValidationError('Password and confirm password must match.');
+      return;
+    }
+
+    await handleRegister({ name, email, password });
   }
 
   return (
     <section className="auth-page">
-      <div className="auth-card">
+      <div className="auth-card auth-card--wide">
         <div className="auth-header">
           <h1>Create account</h1>
-          <p>Start with a simple registration or sign in with OAuth.</p>
+          <p>Register once and use local auth, OAuth, or OpenID Connect providers.</p>
         </div>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <label>
-            <span>Full name</span>
-            <input
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Jane Doe"
-              required
-            />
-          </label>
+        <form className="auth-form" onSubmit={submit}>
+          <Input
+            label="Full name"
+            type="text"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Jane Doe"
+            required
+          />
 
-          <label>
-            <span>Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              required
-            />
-          </label>
+          <Input
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            required
+            error={validationError && !isValidEmail(email) ? validationError : undefined}
+          />
 
-          <label>
-            <span>Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Create a strong password"
-              required
-            />
-          </label>
+          <Input
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Create a strong password"
+            required
+          />
 
+          <Input
+            label="Confirm password"
+            type="password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            placeholder="Re-enter password"
+            required
+            error={validationError && !doPasswordsMatch(password, confirmPassword) ? validationError : undefined}
+          />
+
+          {validationError ? <div className="form-error">{validationError}</div> : null}
           {error ? <div className="form-error">{error}</div> : null}
 
-          <button className="btn btn-primary" type="submit" disabled={isBusy}>
+          <Button type="submit" variant="primary" disabled={isBusy}>
             {isBusy ? 'Creating account…' : 'Create account'}
-          </button>
+          </Button>
         </form>
 
         <div className="auth-footer">

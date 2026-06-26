@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 export default function OAuthPage() {
   const navigate = useNavigate();
-  const { completeOAuthLogin } = useAuth();
+  const completeOAuthLogin = useAuthStore((state) => state.completeOAuthLogin);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      completeOAuthLogin();
+    const timer = window.setTimeout(async () => {
+      await completeOAuthLogin();
       navigate('/dashboard', { replace: true });
     }, 1200);
 
