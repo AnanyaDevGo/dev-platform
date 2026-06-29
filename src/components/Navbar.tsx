@@ -9,6 +9,7 @@ export default function Navbar() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
   }, [theme]);
 
   return (
@@ -26,6 +27,7 @@ export default function Navbar() {
         <button
           className="link-button"
           type="button"
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
           onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
         >
           {theme === 'light' ? 'Dark mode' : 'Light mode'}

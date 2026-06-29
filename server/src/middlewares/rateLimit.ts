@@ -1,22 +1,41 @@
 import { Request, Response, NextFunction } from 'express';
-import { createClient } from 'redis';
-import dotenv from 'dotenv';
+import { isRedisAvailable, redisClient } from '../redis';
 
-dotenv.config();
-
-const redisClient = createClient({ url: process.env.REDIS_URL });
-redisClient.connect().catch(console.error);
+const WINDOW_LIMIT = 100;
+const memoryHits = new Map<string, { count: number; resetAt: number }>();
 
 export async function rateLimiter(req: Request, res: Response, next: NextFunction) {
   const key = `rate:${req.ip}`;
-  const current = await redisClient.incr(key);
 
-  if (current === 1) {
-    await redisClient.expire(key, 60);
+  if (!isRedisAvailable()) {
+    const now = Date.now();
+    const current = memoryHits.get(key);
+
+    if (!current || current.resetAt < now) {
+      memoryHits.set(key, { count: 1, resetAt: now + 60_000 });
+      return next();
+    }
+
+    current.count += 1;
+    if (current.count > WINDOW_LIMIT) {
+      return res.status(429).json({ message: 'Too many requests. Please try again later.' });
+    }
+
+    return next();
   }
 
-  if (current > 100) {
-    return res.status(429).json({ message: 'Too many requests. Please try again later.' });
+  try {
+    const current = await redisClient.incr(key);
+
+    if (current === 1) {
+      await redisClient.expire(key, 60);
+    }
+
+    if (current > WINDOW_LIMIT) {
+      return res.status(429).json({ message: 'Too many requests. Please try again later.' });
+    }
+  } catch (error) {
+    console.error('Rate limiter skipped:', error);
   }
 
   next();

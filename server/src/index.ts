@@ -1,21 +1,16 @@
 import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
-import connectRedis from 'connect-redis';
-import { createClient } from 'redis';
+import RedisStore from 'connect-redis';
 import dotenv from 'dotenv';
 import authRouter from './routes/auth';
 import apiRouter from './routes/api';
 import { rateLimiter } from './middlewares/rateLimit';
+import { connectRedis, redisClient } from './redis';
 
 dotenv.config();
 
-const RedisStore = connectRedis(session);
-const redisClient = createClient({ url: process.env.REDIS_URL });
-
-redisClient.connect().catch((error) => {
-  console.error('Redis connection failed:', error);
-});
+void connectRedis();
 
 const app = express();
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
@@ -23,7 +18,7 @@ app.use(rateLimiter);
 app.use(express.json());
 app.use(
   session({
-    store: new RedisStore({ client: redisClient }),
+    store: process.env.REDIS_URL ? new RedisStore({ client: redisClient }) : undefined,
     secret: process.env.SESSION_SECRET || 'secret',
     resave: false,
     saveUninitialized: false,

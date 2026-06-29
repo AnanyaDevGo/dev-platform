@@ -3,11 +3,11 @@ import { AuthResponse, User } from '../types/auth';
 import { USE_MOCK_API } from '../config';
 
 const mockUsers: Record<string, User> = {
-  'user@example.com': { id: 'u-1', email: 'user@example.com', name: 'Developer' },
+  'user@example.com': { id: 'u-1', email: 'user@example.com', name: 'Developer', role: 'ADMIN' },
 };
 
 function createMockUser(name: string, email: string): User {
-  return { id: `u-${Date.now()}`, name, email };
+  return { id: `u-${Date.now()}`, name, email, role: 'ADMIN' };
 }
 
 export const authService = {
@@ -66,7 +66,7 @@ export const authService = {
       await new Promise((resolve) => setTimeout(resolve, 500));
       return {
         accessToken: 'oauth-token-789',
-        user: { id: 'u-oauth', name: 'OAuth User', email: 'oauth@example.com' },
+        user: { id: 'u-oauth', name: 'OAuth User', email: 'oauth@example.com', role: 'ADMIN' },
       };
     }
 

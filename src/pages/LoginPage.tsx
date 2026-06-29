@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLogin } from '../hooks/useLogin';
 import { Button } from '../components/ui/Button';
@@ -10,16 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [validationError, setValidationError] = useState('');
-  const [authMode, setAuthMode] = useState<'local' | 'oauth2' | 'oidc' | 'federated' | 'rbac'>('local');
   const { handleLogin, error, isBusy } = useLogin();
-
-  const authModeDescriptions: Record<string, string> = {
-    local: 'Use your email and password for local application authentication with secure access.',
-    oauth2: 'Authenticate through OAuth2 for secure delegated access using standard provider flows.',
-    oidc: 'Sign in with OpenID Connect (OIDC) for federated identity and verified user profiles.',
-    federated: 'Use federated identity providers to bridge authentication across multiple systems.',
-    rbac: 'Access is governed by role-based access control (RBAC) with least privilege and W3 best practices.',
-  };
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,35 +37,6 @@ export default function LoginPage() {
           <h1>Welcome back</h1>
           <p>Sign in to continue to your workspace, manage projects, and review audit logs.</p>
         </div>
-
-        <div className="auth-methods">
-          <Button type="button" variant={authMode === 'local' ? 'primary' : 'secondary'} onClick={() => setAuthMode('local')}>
-            Local auth
-          </Button>
-          <Button type="button" variant={authMode === 'oauth2' ? 'primary' : 'ghost'} onClick={() => {
-            setAuthMode('oauth2');
-            window.location.href = '/oauth?provider=oauth2';
-          }}>
-            OAuth2
-          </Button>
-          <Button type="button" variant={authMode === 'oidc' ? 'primary' : 'ghost'} onClick={() => {
-            setAuthMode('oidc');
-            window.location.href = '/oauth?provider=oidc';
-          }}>
-            OIDC
-          </Button>
-          <Button type="button" variant={authMode === 'federated' ? 'primary' : 'ghost'} onClick={() => {
-            setAuthMode('federated');
-            window.location.href = '/oauth?provider=federated';
-          }}>
-            Federated
-          </Button>
-          <Button type="button" variant={authMode === 'rbac' ? 'primary' : 'ghost'} onClick={() => setAuthMode('rbac')}>
-            RBAC
-          </Button>
-        </div>
-
-        <div className="auth-method-tip">{authModeDescriptions[authMode]}</div>
 
         <form className="auth-form" onSubmit={submit}>
           <Input

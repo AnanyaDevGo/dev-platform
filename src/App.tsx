@@ -35,9 +35,9 @@ export default function App() {
 
         <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route index element={<DashboardPage />} />
-          <Route path="users" element={<UsersPage />} />
+          <Route path="users" element={<ProtectedRoute allowedRoles={['ADMIN']}><UsersPage /></ProtectedRoute>} />
           <Route path="projects" element={<ProjectsPage />} />
-          <Route path="audit" element={<AuditLogsPage />} />
+          <Route path="audit" element={<ProtectedRoute allowedRoles={['ADMIN']}><AuditLogsPage /></ProtectedRoute>} />
           <Route path="monitoring" element={<MonitoringPage />} />
         </Route>
 

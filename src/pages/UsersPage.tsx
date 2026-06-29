@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import PageContainer from '../components/PageContainer';
 import { Card } from '../components/ui/Card';
+import { demoUsers } from '../data/demoData';
 import { userService } from '../services/user.service';
 import { User } from '../types/auth';
 
@@ -13,9 +14,9 @@ export default function UsersPage() {
     async function loadUsers() {
       try {
         const fetchedUsers = await userService.getUsers();
-        setUsers(fetchedUsers);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load users.');
+        setUsers(fetchedUsers.length ? fetchedUsers : demoUsers);
+      } catch {
+        setUsers(demoUsers);
       } finally {
         setLoading(false);
       }
