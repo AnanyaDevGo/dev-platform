@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useRegister } from '../hooks/useRegister';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { PasswordInput } from '../components/ui/PasswordInput';
 import { isValidEmail, isValidPassword, doPasswordsMatch } from '../utils/validation';
 
 export default function RegisterPage() {
@@ -44,8 +45,9 @@ export default function RegisterPage() {
     <section className="auth-page">
       <div className="auth-card auth-card--wide">
         <div className="auth-header">
-          <h1>Create account</h1>
-          <p>Register once and use local auth, OAuth, or OpenID Connect providers.</p>
+          <span className="auth-badge">Dev Portal</span>
+          <h1>Create your account</h1>
+          <p>Join Dev Portal to manage projects, monitor activity, and enable secure sign-on.</p>
         </div>
 
         <form className="auth-form" onSubmit={submit}>
@@ -68,18 +70,16 @@ export default function RegisterPage() {
             error={validationError && !isValidEmail(email) ? validationError : undefined}
           />
 
-          <Input
+          <PasswordInput
             label="Password"
-            type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Create a strong password"
             required
           />
 
-          <Input
+          <PasswordInput
             label="Confirm password"
-            type="password"
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             placeholder="Re-enter password"
@@ -95,7 +95,7 @@ export default function RegisterPage() {
           </Button>
         </form>
 
-        <div className="auth-footer">
+        <div className="auth-footer auth-footer--center">
           <span>Already have an account?</span>
           <Link to="/login">Sign in</Link>
         </div>

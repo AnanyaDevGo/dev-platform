@@ -1,12 +1,14 @@
 import { apiClient } from './api';
-import { AuthResponse } from '../types/auth';
+import { AuthResponse, User } from '../types/auth';
 import { USE_MOCK_API } from '../config';
 
-const mockUser = {
-  id: 'u-1',
-  email: 'user@example.com',
-  name: 'Developer',
+const mockUsers: Record<string, User> = {
+  'user@example.com': { id: 'u-1', email: 'user@example.com', name: 'Developer' },
 };
+
+function createMockUser(name: string, email: string): User {
+  return { id: `u-${Date.now()}`, name, email };
+}
 
 export const authService = {
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -16,9 +18,14 @@ export const authService = {
 
     if (USE_MOCK_API) {
       await new Promise((resolve) => setTimeout(resolve, 500));
+      const user = mockUsers[email.toLowerCase()];
+      if (!user) {
+        throw new Error('No account found. Please register first.');
+      }
+
       return {
         accessToken: 'mock-token-123',
-        user: { ...mockUser, email },
+        user,
       };
     }
 
@@ -35,9 +42,16 @@ export const authService = {
 
     if (USE_MOCK_API) {
       await new Promise((resolve) => setTimeout(resolve, 500));
+      const normalizedEmail = email.toLowerCase();
+      if (mockUsers[normalizedEmail]) {
+        throw new Error('This email is already registered. Please sign in.');
+      }
+
+      const newUser = createMockUser(name, normalizedEmail);
+      mockUsers[normalizedEmail] = newUser;
       return {
         accessToken: 'mock-token-456',
-        user: { id: 'u-2', name, email },
+        user: newUser,
       };
     }
 
@@ -47,7 +61,7 @@ export const authService = {
     });
   },
 
-  async completeOAuthLogin(): Promise<AuthResponse> {
+  async completeOAuthLogin(provider = 'google'): Promise<AuthResponse> {
     if (USE_MOCK_API) {
       await new Promise((resolve) => setTimeout(resolve, 500));
       return {
@@ -56,7 +70,17 @@ export const authService = {
       };
     }
 
-    return apiClient.request<AuthResponse>('/auth/oauth/complete', {
+    return apiClient.request<AuthResponse>(`/auth/oauth/complete?provider=${encodeURIComponent(provider)}`, {
+      method: 'GET',
+    });
+  },
+
+  async me(): Promise<User> {
+    if (USE_MOCK_API) {
+      return new Promise((resolve) => setTimeout(() => resolve(mockUsers['user@example.com']), 100));
+    }
+
+    return apiClient.request<User>('/auth/me', {
       method: 'GET',
     });
   },

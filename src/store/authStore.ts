@@ -12,7 +12,8 @@ interface AuthStore {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  completeOAuthLogin: () => Promise<void>;
+  completeOAuthLogin: (provider?: string) => Promise<void>;
+  restoreSession: () => Promise<void>;
   setLoading: (loading: boolean) => void;
   setError: (message: string | null) => void;
 }
@@ -67,11 +68,11 @@ export const useAuthStore = create<AuthStore>()(
         set({ user: null, accessToken: null, isAuthenticated: false, error: null });
         await authService.logout();
       },
-      completeOAuthLogin: async () => {
+      completeOAuthLogin: async (provider = 'google') => {
         set({ loading: true, error: null });
 
         try {
-          const response = await authService.completeOAuthLogin();
+          const response = await authService.completeOAuthLogin(provider);
           set({
             user: response.user,
             accessToken: response.accessToken,
@@ -81,6 +82,21 @@ export const useAuthStore = create<AuthStore>()(
           const message = e instanceof Error ? e.message : 'OAuth login failed.';
           set({ error: message });
           throw new Error(message);
+        } finally {
+          set({ loading: false });
+        }
+      },
+      restoreSession: async () => {
+        set({ loading: true, error: null });
+
+        try {
+          const currentUser = await authService.me();
+          set({
+            user: currentUser,
+            isAuthenticated: true,
+          });
+        } catch {
+          set({ user: null, accessToken: null, isAuthenticated: false });
         } finally {
           set({ loading: false });
         }

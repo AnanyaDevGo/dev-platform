@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Link } from 'react-router-dom';
 
 export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useLocalStorage<boolean>('dev-portal-sidebar-collapsed', false);
 
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>

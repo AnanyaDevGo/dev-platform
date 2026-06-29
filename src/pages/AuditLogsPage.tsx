@@ -1,23 +1,57 @@
+import { useEffect, useState } from 'react';
 import PageContainer from '../components/PageContainer';
 import { Card } from '../components/ui/Card';
+import { apiClient } from '../services/api';
 
-const auditEntries = [
-  { id: 'a-1', event: 'User login', actor: 'Ananya Patel', time: '2 minutes ago' },
-  { id: 'a-2', event: 'Project created', actor: 'Noah Carter', time: '1 hour ago' },
-  { id: 'a-3', event: 'OAuth session refreshed', actor: 'Mia Chen', time: 'Yesterday' },
-];
+interface AuditLogEntry {
+  id: string;
+  event: string;
+  details?: string;
+  createdAt: string;
+  user: {
+    name: string;
+    email: string;
+  };
+}
 
 export default function AuditLogsPage() {
+  const [entries, setEntries] = useState<AuditLogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function loadAuditLogs() {
+      try {
+        const fetched = await apiClient.request<AuditLogEntry[]>('/api/audit-logs', {
+          method: 'GET',
+        });
+        setEntries(fetched);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load audit logs.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadAuditLogs();
+  }, []);
+
   return (
     <PageContainer title="Audit Logs" description="Track recent events and user actions for compliance and troubleshooting.">
-      <div className="card-grid">
-        {auditEntries.map((entry) => (
-          <Card key={entry.id} title={entry.event} footer={<span>{entry.time}</span>}>
-            <p>Actor: {entry.actor}</p>
-            <p>Entry ID: {entry.id}</p>
-          </Card>
-        ))}
-      </div>
+      {loading ? (
+        <p>Loading audit logs…</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+        <div className="card-grid">
+          {entries.map((entry) => (
+            <Card key={entry.id} title={entry.event} footer={<span>{new Date(entry.createdAt).toLocaleString()}</span>}>
+              <p>{entry.details || 'No details provided.'}</p>
+              <p>User: {entry.user.name} ({entry.user.email})</p>
+            </Card>
+          ))}
+        </div>
+      )}
     </PageContainer>
   );
 }
