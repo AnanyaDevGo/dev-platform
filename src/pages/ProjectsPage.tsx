@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import PageContainer from '../components/PageContainer';
 import { Card } from '../components/ui/Card';
-import { demoProjects } from '../data/demoData';
 import { projectService } from '../services/project.service';
 import { Project } from '../types/project';
 
@@ -24,9 +23,9 @@ export default function ProjectsPage() {
     async function loadProjects() {
       try {
         const fetched = await projectService.getProjects();
-        setProjects(fetched.length ? fetched : demoProjects);
-      } catch {
-        setProjects(demoProjects);
+        setProjects(fetched);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load projects.');
       } finally {
         setLoading(false);
       }
@@ -51,24 +50,19 @@ export default function ProjectsPage() {
       setProjects((current) => [created, ...current]);
       setFormData({ name: '', description: '', status: 'ACTIVE' });
       setExpandedProject(created.id);
-    } catch {
-      const created: Project = {
-        id: `p-${Date.now()}`,
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        status: formData.status,
-        owner: {
-          id: 'u-demo',
-          name: 'Demo Admin',
-          email: 'demo.admin@example.com',
-        },
-        createdAt: new Date().toISOString(),
-      };
-      setProjects((current) => [created, ...current]);
-      setFormData({ name: '', description: '', status: 'ACTIVE' });
-      setExpandedProject(created.id);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Failed to create project.');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDelete(projectId: string) {
+    try {
+      await projectService.deleteProject(projectId);
+      setProjects((current) => current.filter((project) => project.id !== projectId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete project.');
     }
   }
 
@@ -121,7 +115,9 @@ export default function ProjectsPage() {
       {loading ? (
         <p>Loading projects…</p>
       ) : error ? (
-        <p>{error}</p>
+        <p className="form-error">{error}</p>
+      ) : projects.length === 0 ? (
+        <p>No projects yet. Create your first project above.</p>
       ) : (
         <div className="card-grid">
           {projects.map((project) => {
@@ -137,6 +133,9 @@ export default function ProjectsPage() {
                   onClick={() => setExpandedProject(isExpanded ? null : project.id)}
                 >
                   {isExpanded ? 'Hide details' : 'Show details'}
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => handleDelete(project.id)}>
+                  Delete
                 </button>
                 {isExpanded ? (
                   <div className="project-details-panel">

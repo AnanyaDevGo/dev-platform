@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import PageContainer from '../components/PageContainer';
 import { Card } from '../components/ui/Card';
-import { demoUsers } from '../data/demoData';
 import { userService } from '../services/user.service';
 import { User } from '../types/auth';
 
@@ -14,9 +13,9 @@ export default function UsersPage() {
     async function loadUsers() {
       try {
         const fetchedUsers = await userService.getUsers();
-        setUsers(fetchedUsers.length ? fetchedUsers : demoUsers);
-      } catch {
-        setUsers(demoUsers);
+        setUsers(fetchedUsers);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load users.');
       } finally {
         setLoading(false);
       }
@@ -30,11 +29,13 @@ export default function UsersPage() {
       {loading ? (
         <p>Loading users…</p>
       ) : error ? (
-        <p>{error}</p>
+        <p className="form-error">{error}</p>
+      ) : users.length === 0 ? (
+        <p>No users found.</p>
       ) : (
         <div className="card-grid">
           {users.map((user) => (
-            <Card key={user.id} title={user.name} footer={<span>{user.role ?? 'User'}</span>}>
+            <Card key={user.id} title={user.name} footer={<span>{user.role ?? 'USER'}</span>}>
               <p>Email: {user.email}</p>
               <p>User ID: {user.id}</p>
             </Card>

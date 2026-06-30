@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import PageContainer from '../components/PageContainer';
 import { Card } from '../components/ui/Card';
-import { demoAuditLogs } from '../data/demoData';
-import { apiClient } from '../services/api';
+import { auditService } from '../services/audit.service';
 import type { AuditLogEntry } from '../types/audit';
 
 export default function AuditLogsPage() {
@@ -13,12 +12,10 @@ export default function AuditLogsPage() {
   useEffect(() => {
     async function loadAuditLogs() {
       try {
-        const fetched = await apiClient.request<AuditLogEntry[]>('/api/audit-logs', {
-          method: 'GET',
-        });
-        setEntries(fetched.length ? fetched : demoAuditLogs);
-      } catch {
-        setEntries(demoAuditLogs);
+        const fetched = await auditService.getAuditLogs();
+        setEntries(fetched);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load audit logs.');
       } finally {
         setLoading(false);
       }
@@ -32,7 +29,9 @@ export default function AuditLogsPage() {
       {loading ? (
         <p>Loading audit logs…</p>
       ) : error ? (
-        <p>{error}</p>
+        <p className="form-error">{error}</p>
+      ) : entries.length === 0 ? (
+        <p>No audit logs recorded yet.</p>
       ) : (
         <div className="card-grid">
           {entries.map((entry) => (
